@@ -14,6 +14,6 @@
 
 add_subdirectory(prometheus)
 
-# add_subdirectory(stackdriver) TODO
+add_subdirectory(stackdriver)
 
 add_subdirectory(stdout)

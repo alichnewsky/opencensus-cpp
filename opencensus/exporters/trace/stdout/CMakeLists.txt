@@ -25,4 +25,5 @@ opencensus_test(exporters_trace_stdout_test
                 internal/stdout_exporter_test.cc
                 exporters_trace_stdout
                 trace
+		context
                 absl::time)

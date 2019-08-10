@@ -45,3 +45,5 @@ opencensus_test(common_stats_object_test
                 common_stats_object
                 absl::strings
                 absl::span)
+
+add_subdirectory( grpc )
