@@ -1,28 +1,31 @@
 
 opencensus_lib( exporters_stats_stackdriver
                 PUBLIC
-		SRCS
-		internal/stackdriver_exporter.cc
-		DEPS
-		stats
-		exporters_stats_stackdriver_utils
-		)
+                SRCS
+                internal/stackdriver_exporter.cc
+	        DEPS
+                common_hostname
+                common_grpc_status
+                common_grpc_with_user_agent
+                stats
+                exporters_stats_stackdriver_utils
+)
 
 opencensus_lib( exporters_stats_stackdriver_utils
                 PUBLIC
-		SRCS
-		internal/stackdriver_utils.cc
-		DEPS
-		stats
-		)
+                SRCS
+                internal/stackdriver_utils.cc
+                DEPS
+                stats
+)
 
 opencensus_lib( time_series_matcher
                 PUBLIC
-		SRCS
-		internal/time_series_matcher.cc
-		DEPS
-		stats
-		)
+                SRCS
+                internal/time_series_matcher.cc
+                DEPS
+                stats
+)
 
 # why can't I just declare googleapis-c++::foo_bar ? did I fuck up my exporting ?
 
@@ -45,20 +48,17 @@ target_link_libraries     ( opencensus_time_series_matcher PUBLIC gmock googleap
 opencensus_test(exporters_stats_stackdriver_utils_test
                 internal/stackdriver_utils_test.cc
                 exporters_stats_stackdriver_utils
-		time_series_matcher
+                time_series_matcher
                 stats
                 stats_test_utils
 )
 
 opencensus_test(exporters_stats_stackdriver_e2e_test
                 internal/stackdriver_e2e_test.cc
-		common_hostname
-		common_grpc_status
-		common_grpc_with_user_agent
-		exporters_stats_stackdriver
+                exporters_stats_stackdriver
                 exporters_stats_stackdriver_utils
-		time_series_matcher
-		stats
+                time_series_matcher
+                stats
 )
 		
 		
