@@ -126,13 +126,13 @@ opencensus_lib(
 # Tests
 # ----------------------------------------------------------------------
 
-opencensus_test(trace_annotation_test internal/annotation_test.cc trace)
+opencensus_test(trace_annotation_test internal/annotation_test.cc trace context )
 
 opencensus_test(trace_attribute_value_ref_test
-                internal/attribute_value_ref_test.cc trace)
+                internal/attribute_value_ref_test.cc trace context )
 
 opencensus_test(trace_attribute_value_test internal/attribute_value_test.cc
-                trace)
+                trace context )
 
 opencensus_test(trace_b3_test internal/b3_test.cc trace_b3)
 
@@ -145,23 +145,23 @@ opencensus_test(trace_context_util_test internal/context_util_test.cc trace
 opencensus_test(trace_grpc_trace_bin_test internal/grpc_trace_bin_test.cc
                 trace_grpc_trace_bin)
 
-opencensus_test(trace_link_test internal/link_test.cc trace)
+opencensus_test(trace_link_test internal/link_test.cc trace context )
 
 opencensus_test(trace_local_span_store_test internal/local_span_store_test.cc
-                trace absl::memory absl::synchronization)
+                context trace absl::memory absl::synchronization)
 
 opencensus_test(
-  trace_running_span_store_test internal/running_span_store_test.cc trace
+  trace_running_span_store_test internal/running_span_store_test.cc context trace
   absl::base absl::memory absl::synchronization)
 
-opencensus_test(trace_sampler_test internal/sampler_test.cc trace absl::strings
+opencensus_test(trace_sampler_test internal/sampler_test.cc context trace absl::strings
                 absl::synchronization absl::time)
 
-opencensus_test(trace_span_test internal/span_test.cc trace absl::strings)
+opencensus_test(trace_span_test internal/span_test.cc context trace absl::strings)
 
-opencensus_test(trace_span_id_test internal/span_id_test.cc trace)
+opencensus_test(trace_span_id_test internal/span_id_test.cc context trace)
 
-opencensus_test(trace_span_options_test internal/span_options_test.cc trace
+opencensus_test(trace_span_options_test internal/span_options_test.cc context trace
                 absl::strings absl::synchronization)
 
 opencensus_test(trace_span_context_test internal/span_context_test.cc
@@ -170,18 +170,19 @@ opencensus_test(trace_span_context_test internal/span_context_test.cc
 opencensus_test(
   trace_span_exporter_test
   internal/span_exporter_test.cc
+  context
   trace
   absl::memory
   absl::strings
   absl::synchronization
   absl::time)
 
-opencensus_test(trace_status_test internal/status_test.cc trace absl::strings)
+opencensus_test(trace_status_test internal/status_test.cc context trace absl::strings)
 
-opencensus_test(trace_trace_config_test internal/trace_config_test.cc trace
+opencensus_test(trace_trace_config_test internal/trace_config_test.cc context trace
                 absl::time)
 
-opencensus_test(trace_trace_options_test internal/trace_options_test.cc trace)
+opencensus_test(trace_trace_options_test internal/trace_options_test.cc context trace)
 
 opencensus_test(trace_trace_context_test internal/trace_context_test.cc
                 trace_trace_context)
@@ -190,7 +191,7 @@ opencensus_test(trace_with_span_test internal/with_span_test.cc trace
                 trace_with_span context)
 
 opencensus_benchmark(trace_attribute_value_ref_benchmark
-                     internal/attribute_value_ref_benchmark.cc trace)
+                     internal/attribute_value_ref_benchmark.cc context trace)
 
 opencensus_benchmark(trace_b3_benchmark internal/b3_benchmark.cc trace_b3)
 
@@ -202,10 +203,10 @@ opencensus_benchmark(trace_grpc_trace_bin_benchmark
                      internal/grpc_trace_bin_benchmark.cc trace_grpc_trace_bin)
 
 opencensus_benchmark(trace_sampler_benchmark internal/sampler_benchmark.cc
-                     trace_span_context trace)
+                     trace_span_context context trace)
 
 opencensus_benchmark(trace_span_benchmark internal/span_benchmark.cc
-                     trace_span_context trace)
+                     trace_span_context context trace)
 
 opencensus_benchmark(trace_span_id_benchmark internal/span_id_benchmark.cc
                      trace_span_context)

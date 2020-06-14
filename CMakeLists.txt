@@ -42,6 +42,10 @@ include(OpenCensusDeps)
 
 include(OpenCensusHelpers)
 
+# something else exports abseil-cpp. not sure why or how
+# i have absl in /usr/local/lib64/cmake/absl 
+find_package( absl )
+
 # OpenCensus code.
 add_subdirectory(opencensus)
 

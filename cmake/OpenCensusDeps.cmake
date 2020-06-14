@@ -18,10 +18,10 @@ FetchContent_Declare(
   googletest
   GIT_REPOSITORY https://github.com/google/googletest
   GIT_TAG master)
-FetchContent_Declare(
-  abseil
-  GIT_REPOSITORY https://github.com/abseil/abseil-cpp
-  GIT_TAG master)
+#FetchContent_Declare(
+#  abseil
+#  GIT_REPOSITORY https://github.com/abseil/abseil-cpp
+#  GIT_TAG master)
 FetchContent_Declare(
   prometheus
   GIT_REPOSITORY https://github.com/jupp0r/prometheus-cpp
@@ -54,15 +54,15 @@ if(BUILD_TESTING)
   endif()
 endif()
 
-FetchContent_GetProperties(abseil)
-if(NOT abseil_POPULATED)
-  message(STATUS "Dependency: abseil")
-  set(orig_BUILD_TESTING "${BUILD_TESTING}")
-  set(BUILD_TESTING OFF) # Don't include abseil tests.
-  FetchContent_Populate(abseil)
-  add_subdirectory(${abseil_SOURCE_DIR} ${abseil_BINARY_DIR} EXCLUDE_FROM_ALL)
-  set(BUILD_TESTING "${orig_BUILD_TESTING}") # Restore value.
-endif()
+#FetchContent_GetProperties(abseil)
+#if(NOT abseil_POPULATED)
+#  message(STATUS "Dependency: abseil")
+#  set(orig_BUILD_TESTING "${BUILD_TESTING}")
+#  set(BUILD_TESTING OFF) # Don't include abseil tests.
+#  FetchContent_Populate(abseil)
+#  add_subdirectory(${abseil_SOURCE_DIR} ${abseil_BINARY_DIR} EXCLUDE_FROM_ALL)
+#  set(BUILD_TESTING "${orig_BUILD_TESTING}") # Restore value.
+#endif()
 
 FetchContent_GetProperties(prometheus)
 if(NOT prometheus_POPULATED)

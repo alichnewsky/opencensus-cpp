@@ -19,6 +19,7 @@ opencensus_lib(
   internal/stdout_exporter.cc
   DEPS
   trace
+  context
   absl::base
   absl::memory)
 
