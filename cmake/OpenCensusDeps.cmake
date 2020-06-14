@@ -18,10 +18,7 @@ FetchContent_Declare(
   googletest
   GIT_REPOSITORY https://github.com/google/googletest
   GIT_TAG master)
-#FetchContent_Declare(
-#  abseil
-#  GIT_REPOSITORY https://github.com/abseil/abseil-cpp
-#  GIT_TAG master)
+
 FetchContent_Declare(
   prometheus
   GIT_REPOSITORY https://github.com/jupp0r/prometheus-cpp
@@ -54,15 +51,30 @@ if(BUILD_TESTING)
   endif()
 endif()
 
-#FetchContent_GetProperties(abseil)
-#if(NOT abseil_POPULATED)
-#  message(STATUS "Dependency: abseil")
-#  set(orig_BUILD_TESTING "${BUILD_TESTING}")
-#  set(BUILD_TESTING OFF) # Don't include abseil tests.
-#  FetchContent_Populate(abseil)
-#  add_subdirectory(${abseil_SOURCE_DIR} ${abseil_BINARY_DIR} EXCLUDE_FROM_ALL)
-#  set(BUILD_TESTING "${orig_BUILD_TESTING}") # Restore value.
-#endif()
+# the right thing to do would be to _always_ build abseil as a static library
+# with -fPIC in case BUILD_SHARED_LIBS is on.
+# it is problematic with the way I currently build googleapis cpp files within google-cloud-cpp
+#
+# the crux of the matter is that I need to link opencensus-cpp shared libs
+# into applications that already have their own libcurl, libgrpc* ...
+
+find_package( absl )
+if ( NOT absl_FOUND )
+  FetchContent_Declare(
+    abseil
+    GIT_REPOSITORY https://github.com/abseil/abseil-cpp
+    GIT_TAG master)
+
+  FetchContent_GetProperties(abseil)
+  if(NOT abseil_POPULATED)
+    message(STATUS "Dependency: abseil")
+    set(orig_BUILD_TESTING "${BUILD_TESTING}")
+    set(BUILD_TESTING OFF) # Don't include abseil tests.
+    FetchContent_Populate(abseil)
+    add_subdirectory(${abseil_SOURCE_DIR} ${abseil_BINARY_DIR} EXCLUDE_FROM_ALL)
+    set(BUILD_TESTING "${orig_BUILD_TESTING}") # Restore value.
+  endif()
+endif()
 
 FetchContent_GetProperties(prometheus)
 if(NOT prometheus_POPULATED)
