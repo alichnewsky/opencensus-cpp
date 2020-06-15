@@ -25,6 +25,13 @@ if(NOT re2_POPULATED)
 
 endif()
 
+# I want existing curl
+set ( USE_SYSTEM_CURL YES )
+include(FetchContent)
+FetchContent_Declare(cpr GIT_REPOSITORY https://github.com/whoshuu/cpr.git)
+FetchContent_MakeAvailable(cpr)
+
+
 add_executable(memory_stats_to_stackdriver memory_stats.cc )
 target_include_directories( memory_stats_to_stackdriver PRIVATE "${re2_SOURCE_DIR}" )
 target_link_libraries(
@@ -37,4 +44,5 @@ target_link_libraries(
   opencensus-cpp::exporters_stats_stdout
   opencensus-cpp::stats
   re2
+  cpr::cpr
 )

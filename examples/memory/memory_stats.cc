@@ -11,6 +11,8 @@
 #include "absl/flags/flag.h"
 #include "absl/flags/parse.h"
 
+#include "cpr/cpr.h"
+
 #include "opencensus/stats/stats.h"
 #include "opencensus/exporters/stats/stackdriver/stackdriver_exporter.h"
 #include "opencensus/exporters/stats/stdout/stdout_exporter.h"
@@ -60,24 +62,77 @@ int main( int argc, char** argv )
 
     opencensus::exporters::stats::StackdriverOptions statsOps;
 
-
-    statsOps.project_id = absl::GetFlag( FLAGS_project_id ) ;
     statsOps.metric_name_prefix = "custom.googleapis.com/slb/zenith/";
 
+
+    std::string  project_id = absl::GetFlag( FLAGS_project_id  );
+    std::string instance_id = absl::GetFlag( FLAGS_instance_id );
+    std::string        zone = absl::GetFlag( FLAGS_zone        );
+
+    if ( project_id.empty() ){
+
+        auto r = cpr::Get(cpr::Url{"http://169.254.169.254/computeMetadata/v1/project/project-id"}, // id for numerical id, name for hostname
+                          cpr::Header{{"Metadata-Flavor", "Google"}} );
+        r.status_code;                  // 200
+        r.header["content-type"];       // application/json; charset=utf-8
+        r.text;                         // JSON text string
+
+        // handle retry, errors,
+        if ( r.status_code == 200 ){
+          project_id = r.text;
+        } else {
+          std::cerr << "could not obtain vm project name from metadata server" << std::endl;
+          return 1;
+        }
+    }
+
+    if ( instance_id.empty() ){
+
+        auto r = cpr::Get(cpr::Url{"http://169.254.169.254/computeMetadata/v1/instance/name"}, // id for numerical id, name for hostname
+                          //cpr::Parameters{{"recursive", "true"}, {"alt", "text"}},
+                          cpr::Header{{"Metadata-Flavor", "Google"}} );
+        r.status_code;                  // 200
+        r.header["content-type"];       // application/json; charset=utf-8
+        r.text;                         // JSON text string
+
+        // handle retry, errors,
+        if ( r.status_code == 200 ){
+          instance_id = r.text;
+        } else {
+          std::cerr << "could not obtain vm instance name from metadata server" << std::endl;
+          return 1;
+        }
+    }
+
+    if ( zone.empty() ){
+
+        auto r = cpr::Get(cpr::Url{"http://169.254.169.254/computeMetadata/v1/instance/zone"},
+                          //cpr::Parameters{{"recursive", "true"}, {"alt", "text"}},
+                          cpr::Header{{"Metadata-Flavor", "Google"}} );
+        r.status_code;                  // 200
+        r.header["content-type"];       // application/json; charset=utf-8
+        r.text;                         // JSON text string
+
+        // handle retry, errors,
+        if ( r.status_code == 200 ){
+          //  projects/212598753388/zones/us-central1-c
+          std::vector<std::string> v = absl::StrSplit(r.text, '/');
+          zone = v.back();
+        } else {
+          std::cerr << "could not obtain vm zone from metadata server" << std::endl;
+          return 1;
+        }
+    }
+
+    statsOps.project_id = project_id;
     statsOps.monitored_resource.set_type( kGCEInstanceMonitoredResource );
     //statsOps.monitored_resource.mutable_labels()["project_id" ] = ;
     (*statsOps.monitored_resource.mutable_labels())[ kGCEInstanceIDLabel ] = absl::GetFlag( FLAGS_instance_id );
     (*statsOps.monitored_resource.mutable_labels())[ kZoneLabel ] = absl::GetFlag( FLAGS_zone) ;
 
-
-    if ( statsOps.project_id.empty() ){
-      std::cerr << "need to obtain stackdriver project id from metadata server\n";
-      return 1;
-    }
-
     opencensus::exporters::stats::StackdriverExporter::Register( std::move( statsOps ) );
-
   }
+
   std::cout << "parsing /proc/meminfo every " << absl::GetFlag( FLAGS_period_seconds ) << " seconds " << std::endl;
 
   bool firstTime = true;
@@ -106,7 +161,7 @@ int main( int argc, char** argv )
 
     if ( firstTime ){
 
-      // how od these show up in stack driver monitoring ?
+      // how do these show up in stack driver monitoring ?
 
 
       for ( auto const & p : byteValues ){
@@ -115,7 +170,7 @@ int main( int argc, char** argv )
         opencensus::stats::MeasureInt64 m( opencensus::stats::MeasureInt64::Register( mn, p.first, "bytes" ) );
 
         // register a view ?
-        auto vn = absl::StrCat( "proc/meminfo/", p.first , "_view"); // it turns out this string shows up in stackdriver monitoring....
+        auto vn = absl::StrCat( "proc/meminfo/", p.first, "_view" ); // it turns out this string shows up in stackdriver monitoring....
         auto vd = opencensus::stats::ViewDescriptor()
           .set_name( vn )
           .set_measure( mn )
