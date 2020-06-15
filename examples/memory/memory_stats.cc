@@ -180,7 +180,7 @@ int main( int argc, char** argv )
                         "The limit is calculated according to the formula described under /proc/sys/vm/overcommit_memory. "
                         "For further details, see the kernel source file Documentation/vm/overcommit-accounting."
     } ,
-    { "CommitLimit_AS", "The amount of memory presently allocated on the system.  The committed memory is a sum of all of the memory which has been allocated by processes,"
+    { "Committed_AS",   "The amount of memory presently allocated on the system.  The committed memory is a sum of all of the memory which has been allocated by processes,"
                         " even if it has not been \"used\" by them as of yet.  A process which allocates 1GB of memory (using malloc(3) or similar), but touches only 300MB"
                         " of that memory will show up as using only 300MB of memory even if it has the address space allocated for the entire 1GB."
                         "\n"
