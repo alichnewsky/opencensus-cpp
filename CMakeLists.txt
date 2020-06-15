@@ -38,6 +38,21 @@ enable_testing()
 
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
+# There are cyclical dependencies ( betwen libopencensus_trace.so and libopencensus_context.so )
+# that prevent from building the code as is as shared libraries without undefined symbols...
+#
+# Moreover, because of the way I built gRPC c++ apis within google-cloud-cpp as shared libs, with a specific abseil version _as shared lib_
+
+if ( BUILD_SHARED_LIBS )
+  set( POSITION_INDEPENDENT_CODE ON )
+  set( BUILD_SHARED_LIBS NO )
+endif()
+# clearly there are problems with cyclical deps in this code ( context, trace )
+if ( BUILD_SHARED_LIBS )
+  add_link_options("LINKER:--no-undefined")
+endif()
+
+
 include(OpenCensusDeps)
 
 include(OpenCensusHelpers)
