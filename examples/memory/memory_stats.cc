@@ -17,6 +17,8 @@
 #include "opencensus/exporters/stats/stackdriver/stackdriver_exporter.h"
 #include "opencensus/exporters/stats/stdout/stdout_exporter.h"
 
+#include "google/protobuf/util/json_util.h"
+
 // discover the monitored resource for this VM !?
 // see https://github.com/istio/proxyproxy/extensions/stackdriver/metric/registry.cc
 // for another c++ based project, one that uses stackdriver directly though.
@@ -46,6 +48,23 @@ constexpr char kPodNameLabel[] = "pod_name";
 constexpr char kContainerNameLabel[] = "container_name";
 constexpr char kGCEInstanceIDLabel[] = "instance_id";
 constexpr char kZoneLabel[] = "zone";
+
+std::string ConvertMessageToJson( google::protobuf::Message const * poMsg )
+{
+  std::string strMsg;
+
+  google::protobuf::util::JsonOptions stOpt;
+
+  stOpt.always_print_enums_as_ints = true;
+  stOpt.always_print_primitive_fields = true;
+  stOpt.preserve_proto_field_names = true;
+
+  google::protobuf::util::MessageToJsonString( *poMsg, &strMsg, stOpt );
+
+  return strMsg;
+}
+
+
 
 int main( int argc, char** argv )
 {
@@ -127,8 +146,11 @@ int main( int argc, char** argv )
     statsOps.project_id = project_id;
     statsOps.monitored_resource.set_type( kGCEInstanceMonitoredResource );
     //statsOps.monitored_resource.mutable_labels()["project_id" ] = ;
-    (*statsOps.monitored_resource.mutable_labels())[ kGCEInstanceIDLabel ] = absl::GetFlag( FLAGS_instance_id );
-    (*statsOps.monitored_resource.mutable_labels())[ kZoneLabel ] = absl::GetFlag( FLAGS_zone) ;
+    (*statsOps.monitored_resource.mutable_labels())[ kGCEInstanceIDLabel ] = instance_id;
+    (*statsOps.monitored_resource.mutable_labels())[ kZoneLabel ] = zone;
+
+    std::cout << "using stackdriver project_id " << statsOps.project_id << "\n";
+    std::cout << "using monitored resource " << ConvertMessageToJson( &( statsOps.monitored_resource ) ) << std::endl;
 
     opencensus::exporters::stats::StackdriverExporter::Register( std::move( statsOps ) );
   }
