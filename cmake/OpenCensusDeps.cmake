@@ -14,18 +14,12 @@
 
 include(FetchContent)
 
+
+find_package( googletest )
+if ( NOT googletest_FOUND )
 FetchContent_Declare(
   googletest
   GIT_REPOSITORY https://github.com/google/googletest
-  GIT_TAG master)
-
-FetchContent_Declare(
-  prometheus
-  GIT_REPOSITORY https://github.com/jupp0r/prometheus-cpp
-  GIT_TAG master)
-FetchContent_Declare(
-  benchmark
-  GIT_REPOSITORY https://github.com/google/benchmark
   GIT_TAG master)
 
 FetchContent_GetProperties(googletest)
@@ -49,6 +43,7 @@ if(BUILD_TESTING)
     add_subdirectory(${googletest_SOURCE_DIR} ${googletest_BINARY_DIR}
                      EXCLUDE_FROM_ALL)
   endif()
+endif()
 endif()
 
 # the right thing to do would be to _always_ build abseil as a static library
@@ -76,6 +71,12 @@ if ( NOT absl_FOUND )
   endif()
 endif()
 
+
+FetchContent_Declare(
+  prometheus
+  GIT_REPOSITORY https://github.com/jupp0r/prometheus-cpp
+  GIT_TAG master)
+
 FetchContent_GetProperties(prometheus)
 if(NOT prometheus_POPULATED)
   message(STATUS "Dependency: prometheus")
@@ -96,18 +97,25 @@ if(NOT prometheus_POPULATED)
                    EXCLUDE_FROM_ALL)
 endif()
 
-FetchContent_GetProperties(benchmark)
-if(BUILD_TESTING)
-  message(STATUS "Dependency: benchmark (BUILD_TESTING=${BUILD_TESTING})")
-  if(NOT benchmark_POPULATED)
-    set(BENCHMARK_ENABLE_TESTING
-        OFF
-        CACHE BOOL "Enable testing of the benchmark library." FORCE)
-    set(BENCHMARK_ENABLE_GTEST_TESTS
-        OFF
-        CACHE BOOL "Enable building the unit tests which depend on gtest" FORCE)
-    FetchContent_Populate(benchmark)
-    add_subdirectory(${benchmark_SOURCE_DIR} ${benchmark_BINARY_DIR}
-                     EXCLUDE_FROM_ALL)
+find_package( benchmark )
+if ( NOT benchmark_FOUND )
+  FetchContent_Declare(
+    benchmark
+    GIT_REPOSITORY https://github.com/google/benchmark
+    GIT_TAG master)
+  FetchContent_GetProperties(benchmark)
+  if(BUILD_TESTING)
+    message(STATUS "Dependency: benchmark (BUILD_TESTING=${BUILD_TESTING})")
+    if(NOT benchmark_POPULATED)
+      set(BENCHMARK_ENABLE_TESTING
+          OFF
+          CACHE BOOL "Enable testing of the benchmark library." FORCE)
+      set(BENCHMARK_ENABLE_GTEST_TESTS
+          OFF
+          CACHE BOOL "Enable building the unit tests which depend on gtest" FORCE)
+      FetchContent_Populate(benchmark)
+      add_subdirectory(${benchmark_SOURCE_DIR} ${benchmark_BINARY_DIR}
+                       EXCLUDE_FROM_ALL)
+    endif()
   endif()
 endif()
