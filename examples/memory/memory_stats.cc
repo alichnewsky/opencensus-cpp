@@ -19,24 +19,16 @@
 
 #include "google/protobuf/util/json_util.h"
 
-// discover the monitored resource for this VM !?
-// see https://github.com/istio/proxyproxy/extensions/stackdriver/metric/registry.cc
-// for another c++ based project, one that uses stackdriver directly though.
-// istio, envoy are good examples to look at...
-
 #include "re2/re2.h"
 
-
-// obtain default from metadata server ?
 ABSL_FLAG( std::string, project_id, "", "stackdriver project id" );
 ABSL_FLAG( std::string, instance_id, "", "local GCE instance id" );
 ABSL_FLAG( std::string, zone, "", "local instance zone" );
 ABSL_FLAG( bool, debug, false, "debug : print to stdout" );
 ABSL_FLAG( int, period_seconds, 60, "perform a measurement every N seconds" );
 
-
-// read istio/proxy
 // Monitored resource
+// FIXME : how do I detect if I am on a gce instance, a container inside a k8s_pod in gke ? a container in gce ?
 constexpr char kPodMonitoredResource[] = "k8s_pod";
 constexpr char kContainerMonitoredResource[] = "k8s_container";
 constexpr char kGCEInstanceMonitoredResource[] = "gce_instance";
@@ -64,25 +56,59 @@ std::string ConvertMessageToJson( google::protobuf::Message const * poMsg )
   return strMsg;
 }
 
-
+/*
+   The purpose of this executable is to collect /proc/meminfo and /proc/vmstat 
+   into stackdriver monitoring metrics, using C+, OpenCensus, CMake...
+   
+   FUNCTIONALITY TODO:
+      - help message
+      - programmatically change the metrics prefix.
+      - observe GCE metadata server to dynamically stop and start exporting, or change sampling rate
+      - use flag or same metadata server mechanism to decide if we actually want 130+ /proc/vmstat metrics?
+      - detect which metrics are never implemented and therefore should not be exported at all
+      - more complex views ( spool metrics for a while, resample/denoise and submit ? )
+      - stackdriver project id different from monitoring resource project id ?
+      - detect if we are running from GCE VM, container in a GCE VM, container in GKE ...
+      
+      - discriminate by labels? 
+      - create correct local aggregates for /proc/meminfo that make sense...
+      - observe specific process names ? /proc/[pid]/status, /proc[pid]/smap_rollup ? /proc/[pid]/oom_* ? 
+      
+      - somewhere else I did a python collectd plugin for nstat. implement as a similar opencensus program ?
+      
+   TODO:
+      - fix all warnings.
+      - clang-format like the rest of repository ?
+      - build as a separate CMake project
+      - build as a Bazel example
+      - build as a separate Bazel project
+      - review all the licenses ( re2, cpr, opencensus-cpp, protobuf and abseil )
+      
+   Ideally this should be implemented as a collectd (C) plugin and exporter, and widely distributed...
+   
+ */
 
 int main( int argc, char** argv )
 {
 
+  // FIXME : set --help message. for now only --helpfull works.
+  
   std::vector<char*> positionalArgs =  absl::ParseCommandLine( argc, argv );
 
-
   if ( absl::GetFlag( FLAGS_debug ) ) {
+    
     std::cout << "DEBUG MODE: registering an stdout stats exporter only" << std::endl;
+    
     opencensus::exporters::stats::StdoutExporter::Register();
 
   } else {
+    
     std::cout << "PROD MODE: registering a stackdriver exporter only" << std::endl;
 
     opencensus::exporters::stats::StackdriverOptions statsOps;
 
+    // FIXME : configurable prefix.
     statsOps.metric_name_prefix = "custom.googleapis.com/slb/zenith/";
-
 
     std::string  project_id = absl::GetFlag( FLAGS_project_id  );
     std::string instance_id = absl::GetFlag( FLAGS_instance_id );
@@ -90,7 +116,7 @@ int main( int argc, char** argv )
 
     if ( project_id.empty() ){
 
-        auto r = cpr::Get(cpr::Url{"http://169.254.169.254/computeMetadata/v1/project/project-id"}, // id for numerical id, name for hostname
+        auto r = cpr::Get(cpr::Url{"http://169.254.169.254/computeMetadata/v1/project/project-id"},
                           cpr::Header{{"Metadata-Flavor", "Google"}} );
         r.status_code;                  // 200
         r.header["content-type"];       // application/json; charset=utf-8
@@ -107,8 +133,7 @@ int main( int argc, char** argv )
 
     if ( instance_id.empty() ){
 
-        auto r = cpr::Get(cpr::Url{"http://169.254.169.254/computeMetadata/v1/instance/name"}, // id for numerical id, name for hostname
-                          //cpr::Parameters{{"recursive", "true"}, {"alt", "text"}},
+        auto r = cpr::Get(cpr::Url{"http://169.254.169.254/computeMetadata/v1/instance/name"},
                           cpr::Header{{"Metadata-Flavor", "Google"}} );
         r.status_code;                  // 200
         r.header["content-type"];       // application/json; charset=utf-8
@@ -134,7 +159,7 @@ int main( int argc, char** argv )
 
         // handle retry, errors,
         if ( r.status_code == 200 ){
-          //  projects/212598753388/zones/us-central1-c
+          //  projects/REDACTED/zones/us-central1-c
           std::vector<std::string> v = absl::StrSplit(r.text, '/');
           zone = v.back();
         } else {
@@ -145,6 +170,8 @@ int main( int argc, char** argv )
 
     statsOps.project_id = project_id;
     statsOps.monitored_resource.set_type( kGCEInstanceMonitoredResource );
+    
+    // FIXME : handle a stackdriver project id different from gce project id ?
     //statsOps.monitored_resource.mutable_labels()["project_id" ] = ;
     (*statsOps.monitored_resource.mutable_labels())[ kGCEInstanceIDLabel ] = instance_id;
     (*statsOps.monitored_resource.mutable_labels())[ kZoneLabel ] = zone;
@@ -155,7 +182,7 @@ int main( int argc, char** argv )
     opencensus::exporters::stats::StackdriverExporter::Register( std::move( statsOps ) );
   }
 
-  std::cout << "parsing /proc/meminfo every " << absl::GetFlag( FLAGS_period_seconds ) << " seconds " << std::endl;
+  std::cout << "parsing /proc/meminfo and /proc/vmstat every " << absl::GetFlag( FLAGS_period_seconds ) << " seconds " << std::endl;
 
   // man proc
   std::map< std::string, std::string >  meminfoDescriptions  = {
@@ -235,6 +262,8 @@ int main( int argc, char** argv )
     { "DirectMap1G",    "Number of bytes of RAM linearly mapped by kernel in 1GB pages." }
   };
 
+  // is there _any_ documentation for /proc/vmstat _anywhere ?
+  
   bool firstTime = true;
 
   std::map< std::string, std::int64_t > meminfoByteValues, meminfoCountValues, vmstatCountValues;
@@ -276,21 +305,25 @@ int main( int argc, char** argv )
 
     ifile.close();
 
+    // FIXME : hardly elegant.
     if ( firstTime ){
 
       for ( auto const & p : meminfoByteValues ){
+        
+        // FIXME : metric vs measure name ?
+        
         // register a measure
         auto mn = absl::StrCat( "proc/meminfo/", p.first );
         opencensus::stats::MeasureInt64 m( opencensus::stats::MeasureInt64::Register( mn, p.first, "bytes" ) );
 
-        // register a view ?
-        auto vn = absl::StrCat( "proc/meminfo/", p.first , "_view");
+        // register a view
+        auto vn = absl::StrCat( "proc/meminfo/", p.first , "_view" ); // do I want the _view suffix ?
         auto desc = ( meminfoDescriptions.count( p.first ) > 0 ) ? meminfoDescriptions.at( p.first ) : absl::StrCat( p.first, " in bytes as per /proc/meminfo" );
         auto vd = opencensus::stats::ViewDescriptor()
           .set_name( vn )
           .set_measure( mn )
-          .set_aggregation( opencensus::stats::Aggregation::LastValue())
-          .set_description( desc );
+          .set_aggregation( opencensus::stats::Aggregation::LastValue() ) //is this correct ?
+          .set_description( desc ); 
 
         vd.RegisterForExport();
         meminfoByteMeasures.insert( { p.first,  { m,  meminfoByteValues.at(p.first) } } );
@@ -300,7 +333,7 @@ int main( int argc, char** argv )
         auto mn = absl::StrCat( "proc/meminfo/", p.first );
         opencensus::stats::MeasureInt64 m( opencensus::stats::MeasureInt64::Register( mn, p.first, "") );
 
-        auto vn = absl::StrCat( "proc/meminfo/", p.first , "_view");
+        auto vn = absl::StrCat( "proc/meminfo/", p.first , "_view" ); // do I want the view suffix ?
         auto desc = ( meminfoDescriptions.count( p.first ) > 0 ) ? meminfoDescriptions.at( p.first ) : absl::StrCat( p.first, " count as per /proc/meminfo" );
         auto vd = opencensus::stats::ViewDescriptor()
           .set_name( vn )
@@ -347,7 +380,7 @@ int main( int argc, char** argv )
     }
 
     absl::SleepFor( absl::Seconds( absl::GetFlag( FLAGS_period_seconds  ) ) );
-
+    
   } // infinite loop
 
   return 0;
