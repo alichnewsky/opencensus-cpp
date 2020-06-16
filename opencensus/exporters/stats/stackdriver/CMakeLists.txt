@@ -16,6 +16,7 @@ opencensus_lib( exporters_stats_stackdriver_utils
                 internal/stackdriver_utils.cc
                 DEPS
                 stats
+		common_timestamp
 )
 
 opencensus_lib( time_series_matcher
@@ -41,7 +42,7 @@ target_include_directories(  opencensus_exporters_stats_stackdriver_utils PRIVAT
 target_link_libraries( opencensus_exporters_stats_stackdriver       PUBLIC googleapis_cpp_monitoring_v3_protos )
 target_link_libraries( opencensus_exporters_stats_stackdriver_utils PUBLIC googleapis_cpp_monitoring_v3_protos )
 
-target_include_directories( opencensus_time_series_matcher PUBLIC gmock googleapis_cpp_monitoring_v3_protos ) 
+target_include_directories( opencensus_time_series_matcher PUBLIC gmock googleapis_cpp_monitoring_v3_protos )
 target_link_libraries     ( opencensus_time_series_matcher PUBLIC gmock googleapis_cpp_monitoring_v3_protos )
 
 opencensus_test(exporters_stats_stackdriver_utils_test
@@ -50,7 +51,6 @@ opencensus_test(exporters_stats_stackdriver_utils_test
                 time_series_matcher
                 stats
                 stats_test_utils
-		common_timestamp
 )
 
 opencensus_test(exporters_stats_stackdriver_e2e_test
@@ -59,7 +59,4 @@ opencensus_test(exporters_stats_stackdriver_e2e_test
                 exporters_stats_stackdriver_utils
                 time_series_matcher
                 stats
-		common_timestamp
 )
-
-
