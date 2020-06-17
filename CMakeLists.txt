@@ -70,4 +70,4 @@ if(BUILD_TESTING)
   add_subdirectory(examples)
 endif()
 
-install( EXPORT opencensus-cpp-targets DESTINATION ${LIBDIR}/cmake/opencensus-cpp )
+install( EXPORT opencensus-cpp-targets DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/opencensus-cpp )

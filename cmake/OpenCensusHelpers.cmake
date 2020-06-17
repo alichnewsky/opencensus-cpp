@@ -54,15 +54,6 @@ function(opencensus_benchmark NAME SRC)
 endfunction()
 
 
-# Helper function to perepend an arbitrary stirng to all header fles
-function(prepend var prefix)
-   set(listVar "")
-   foreach(f ${ARGN})
-      list(APPEND listVar "${prefix}/${f}")
-   endforeach(f)
-   set(${var} "${listVar}" PARENT_SCOPE)
-endfunction(prepend)
-
 include(GNUInstallDirs)
 
 # Helper function like bazel's cc_library.  Libraries are namespaced as
@@ -92,10 +83,10 @@ function(opencensus_lib NAME)
 
     install( TARGETS ${_NAME}
              EXPORT opencensus-cpp-targets
-	     RUNTIME DESTINATION       ${BINDIR}
-	     LIBRARY DESTINATION       ${LIBDIR}
-	     ARCHIVE DESTINATION       ${LIBDIR}
-	     PUBLIC_HEADER DESTINATION ${INCLUDEDIR}/${_current_dir_relative_path}
+	     RUNTIME DESTINATION       "${CMAKE_INSTALL_BINDIR}"
+	     LIBRARY DESTINATION       "${CMAKE_INSTALL_LIBDIR}"
+	     ARCHIVE DESTINATION       "${CMAKE_INSTALL_LIBDIR}"
+	     PUBLIC_HEADER DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/${_current_dir_relative_path}"
           )
   else()
 	
