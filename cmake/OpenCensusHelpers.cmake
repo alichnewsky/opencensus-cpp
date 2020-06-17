@@ -53,6 +53,8 @@ function(opencensus_benchmark NAME SRC)
   endif()
 endfunction()
 
+include(GNUInstallDirs)
+
 # Helper function like bazel's cc_library.  Libraries are namespaced as
 # opencensus_* and public libraries are also aliased as opencensus-cpp::*.
 function(opencensus_lib NAME)
@@ -62,14 +64,31 @@ function(opencensus_lib NAME)
   if(ARG_SRCS)
     add_library(${_NAME} ${ARG_SRCS})
     target_link_libraries(${_NAME} PUBLIC ${ARG_DEPS})
-    target_include_directories(${_NAME} PUBLIC ${PROJECT_SOURCE_DIR})
+    target_include_directories(${_NAME} PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}> $<INSTALL_INTERFACE:include> )
   else()
     add_library(${_NAME} INTERFACE)
     target_link_libraries(${_NAME} INTERFACE ${ARG_DEPS})
-    target_include_directories(${_NAME} INTERFACE ${PROJECT_SOURCE_DIR})
+    target_include_directories(${_NAME} INTERFACE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}> $<INSTALL_INTERFACE:include> )
   endif()
   if(ARG_PUBLIC)
     add_library(${PROJECT_NAME}::${NAME} ALIAS ${_NAME})
+    #inelegant and non-idiomatic
+    set(_PUBLIC_TARGETS "${_PUBLIC_TARGETS} ${NAME}" )
+    
+    install( TARGETS ${_NAME}
+             EXPORT opencensus-cpp-targets
+	     RUNTIME       DESTINATION  ${BINDIR}
+	     LIBRARY       DESTINATION ${LIBDIR}
+	     ARCHIVE       DESTINATION ${LIBDIR}
+	     PUBLIC_HEADER DESTINATION ${INCLUDEDIR}
+          )
+  else()
+    # fight export bug ?
+    # I still dont' know how to build a "public" static library depending on "private ones" without exporting the targets
+    # 
+    install( TARGETS ${_NAME}
+             EXPORT opencensus-cpp-targets )
+
   endif()
 endfunction()
 

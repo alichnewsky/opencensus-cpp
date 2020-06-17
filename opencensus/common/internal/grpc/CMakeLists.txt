@@ -8,7 +8,8 @@ opencensus_lib(common_grpc_status
               DEPS
               absl::strings
 )
-target_include_directories( opencensus_common_grpc_status PUBLIC gRPC::grpc++ )
+get_target_property( _iface_incdir gRPC::grpc++ INTERFACE_INCLUDE_DIRECTORIES)
+target_include_directories( opencensus_common_grpc_status PUBLIC $<BUILD_INTERFACE:${_iface_incdir}> )
 target_link_libraries     ( opencensus_common_grpc_status PUBLIC gRPC::grpc++ )
 
 opencensus_test(common_grpc_status_test
@@ -21,5 +22,5 @@ opencensus_lib(common_grpc_with_user_agent
               DEPS
               absl::strings
 )
-target_include_directories( opencensus_common_grpc_with_user_agent PUBLIC gRPC::grpc++ )
+target_include_directories( opencensus_common_grpc_with_user_agent PUBLIC $<BUILD_INTERFACE:${_iface_incdir}> )
 target_link_libraries     ( opencensus_common_grpc_with_user_agent PUBLIC gRPC::grpc++ )

@@ -68,3 +68,6 @@ add_subdirectory(opencensus)
 if(BUILD_TESTING)
   add_subdirectory(examples)
 endif()
+
+include(GNUInstallDirs)
+install( EXPORT opencensus-cpp-targets DESTINATION ${LIBDIR}/cmake/opencensus-cpp )

@@ -34,15 +34,15 @@ find_package( googleapis CONFIG REQUIRED googleapis_cpp_monitoring_v3_protos )
 
 # this works
 get_target_property( _iface_incdir googleapis_cpp_monitoring_v3_protos INTERFACE_INCLUDE_DIRECTORIES )
-target_include_directories(  opencensus_exporters_stats_stackdriver      PRIVATE ${_iface_incdir}  )
-target_include_directories(  opencensus_exporters_stats_stackdriver_utils PRIVATE ${_iface_incdir}  )
+target_include_directories(  opencensus_exporters_stats_stackdriver       PRIVATE $<BUILD_INTERFACE:${_iface_incdir}>  )
+target_include_directories(  opencensus_exporters_stats_stackdriver_utils PRIVATE $<BUILD_INTERFACE:${_iface_incdir}>  )
 
-#target_include_directories(  opencensus_exporters_stats_stackdriver       PRIVATE googleapis_cpp_monitoring_v3_protos )
-#target_include_directories(  opencensus_exporters_stats_stackdriver_utils PRIVATE googleapis_cpp_monitoring_v3_protos )
 target_link_libraries( opencensus_exporters_stats_stackdriver       PUBLIC googleapis_cpp_monitoring_v3_protos )
 target_link_libraries( opencensus_exporters_stats_stackdriver_utils PUBLIC googleapis_cpp_monitoring_v3_protos )
 
-target_include_directories( opencensus_time_series_matcher PUBLIC gmock googleapis_cpp_monitoring_v3_protos )
+get_target_property( _gmock_iface_incdir gmock INTERFACE_INCLUDE_DIRECTORIES )
+target_include_directories( opencensus_time_series_matcher PUBLIC  $<BUILD_INTERFACE:${_iface_incdir}> )
+#target_include_directories( opencensus_time_series_matcher PUBLIC  $<BUILD_INTERFACE:${_gmock_iface_incdir}> )
 target_link_libraries     ( opencensus_time_series_matcher PUBLIC gmock googleapis_cpp_monitoring_v3_protos )
 
 opencensus_test(exporters_stats_stackdriver_utils_test
