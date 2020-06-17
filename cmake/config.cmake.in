@@ -55,5 +55,6 @@ foreach( _target
         add_library(${scoped_name} IMPORTED INTERFACE)
         set_target_properties(${scoped_name}
                               PROPERTIES INTERFACE_LINK_LIBRARIES
-                              ${imported_name})     
+                              ${imported_name})
+    endif()
 endforeach()
