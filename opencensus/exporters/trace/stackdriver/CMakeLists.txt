@@ -1,5 +1,7 @@
 opencensus_lib( exporters_trace_stackdriver 
                 PUBLIC
+		HDRS
+		stackdriver_exporter.h
                 SRCS
                 internal/stackdriver_exporter.cc
                 DEPS

@@ -1,5 +1,7 @@
 opencensus_lib( exporters_stats_stackdriver
                 PUBLIC
+		HDRS
+		stackdriver_exporter.h
                 SRCS
                 internal/stackdriver_exporter.cc
                 DEPS
@@ -10,8 +12,11 @@ opencensus_lib( exporters_stats_stackdriver
                 exporters_stats_stackdriver_utils
 )
 
+# FIXME :  these are supposed to be INTERNAL LIBRARIES EXPOSED VIA PREVIOUS?
 opencensus_lib( exporters_stats_stackdriver_utils
-                PUBLIC
+                #PUBLIC
+		HDRS
+		internal/stackdriver_utils.h
                 SRCS
                 internal/stackdriver_utils.cc
                 DEPS
@@ -20,7 +25,9 @@ opencensus_lib( exporters_stats_stackdriver_utils
 )
 
 opencensus_lib( time_series_matcher
-                PUBLIC
+                #PUBLIC
+		HDRS
+		internal/time_series_matcher.h
                 SRCS
                 internal/time_series_matcher.cc
                 DEPS

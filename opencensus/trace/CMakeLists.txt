@@ -15,7 +15,31 @@
 opencensus_lib(
   trace
   PUBLIC
-  SRCS
+  HDRS
+  attribute_value_ref.h
+  exporter/annotation.h
+  exporter/attribute_value.h
+  exporter/link.h
+  exporter/message_event.h
+  exporter/span_data.h
+  exporter/span_exporter.h
+  exporter/status.h
+  internal/attribute_list.h
+  internal/local_span_store.h
+  internal/local_span_store_impl.h
+  internal/running_span_store.h
+  internal/running_span_store_impl.h
+  internal/span_exporter_impl.h
+  internal/span_impl.h
+  internal/trace_config_impl.h
+  internal/trace_events.h
+  internal/trace_params_impl.h
+  sampler.h
+  span.h
+  status_code.h
+  trace_config.h
+  trace_params.h
+  SRCS  
   internal/annotation.cc
   internal/attribute_list.cc
   internal/attribute_value.cc
@@ -56,6 +80,8 @@ target_compile_definitions(opencensus_trace
 opencensus_lib(
   trace_b3
   PUBLIC
+  HDRS
+  propagation/b3.h
   SRCS
   internal/b3.cc
   DEPS
@@ -66,6 +92,8 @@ opencensus_lib(
 opencensus_lib(
   trace_cloud_trace_context
   PUBLIC
+  HDRS
+  propagation/cloud_trace_context.h
   SRCS
   internal/cloud_trace_context.cc
   DEPS
@@ -76,6 +104,8 @@ opencensus_lib(
 opencensus_lib(
   trace_context_util
   PUBLIC
+  HDRS
+  context_util.h
   SRCS
   internal/context_util.cc
   DEPS
@@ -85,6 +115,8 @@ opencensus_lib(
 opencensus_lib(
   trace_grpc_trace_bin
   PUBLIC
+  HDRS
+  propagation/grpc_trace_bin.h
   SRCS
   internal/grpc_trace_bin.cc
   DEPS
@@ -95,6 +127,11 @@ opencensus_lib(
 opencensus_lib(
   trace_span_context
   PUBLIC
+  HDRS
+  span_context.h
+  span_id.h
+  trace_id.h
+  trace_options.h
   SRCS
   internal/span_context.cc
   internal/span_id.cc
@@ -106,6 +143,8 @@ opencensus_lib(
 opencensus_lib(
   trace_trace_context
   PUBLIC
+  HDRS
+  propagation/trace_context.h
   SRCS
   internal/trace_context.cc
   DEPS
@@ -116,6 +155,8 @@ opencensus_lib(
 opencensus_lib(
   trace_with_span
   PUBLIC
+  HDRS
+  with_span.h
   SRCS
   internal/with_span.cc
   DEPS

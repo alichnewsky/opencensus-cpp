@@ -3,6 +3,8 @@ find_package( protobuf CONFIG REQUIRED)  # for now, I need that and protobuf_MOD
 find_package( gRPC CONFIG REQUIRED) 
 
 opencensus_lib(common_grpc_status
+              HDRS
+	      status.h
               SRCS
               status.cc
               DEPS
@@ -17,6 +19,8 @@ opencensus_test(common_grpc_status_test
                 common_grpc_status )
 
 opencensus_lib(common_grpc_with_user_agent
+              HDRS
+	      with_user_agent.h
               SRCS
               with_user_agent.cc
               DEPS
