@@ -53,14 +53,27 @@ function(opencensus_benchmark NAME SRC)
   endif()
 endfunction()
 
+
+# Helper function to perepend an arbitrary stirng to all header fles
+function(prepend var prefix)
+   set(listVar "")
+   foreach(f ${ARGN})
+      list(APPEND listVar "${prefix}/${f}")
+   endforeach(f)
+   set(${var} "${listVar}" PARENT_SCOPE)
+endfunction(prepend)
+
 include(GNUInstallDirs)
 
 # Helper function like bazel's cc_library.  Libraries are namespaced as
 # opencensus_* and public libraries are also aliased as opencensus-cpp::*.
 function(opencensus_lib NAME)
-  cmake_parse_arguments(ARG "PUBLIC" "" "SRCS;DEPS" ${ARGN})
+  cmake_parse_arguments(ARG "PUBLIC" "" "HDRS;SRCS;DEPS" ${ARGN})
   set(_NAME "opencensus_${NAME}")
   prepend_opencensus(ARG_DEPS "${ARG_DEPS}")
+
+  string( REPLACE "${PROJECT_SOURCE_DIR}/" ""  _current_dir_relative_path "${CMAKE_CURRENT_LIST_DIR}" )
+
   if(ARG_SRCS)
     add_library(${_NAME} ${ARG_SRCS})
     target_link_libraries(${_NAME} PUBLIC ${ARG_DEPS})
@@ -72,20 +85,25 @@ function(opencensus_lib NAME)
   endif()
   if(ARG_PUBLIC)
     add_library(${PROJECT_NAME}::${NAME} ALIAS ${_NAME})
-    #inelegant and non-idiomatic
-    set(_PUBLIC_TARGETS "${_PUBLIC_TARGETS} ${NAME}" )
     
+    if (ARG_HDRS)
+       set_target_properties( ${_NAME} PROPERTIES PUBLIC_HEADER "${ARG_HDRS}" )
+    endif()
+
     install( TARGETS ${_NAME}
              EXPORT opencensus-cpp-targets
-	     RUNTIME       DESTINATION  ${BINDIR}
-	     LIBRARY       DESTINATION ${LIBDIR}
-	     ARCHIVE       DESTINATION ${LIBDIR}
-	     PUBLIC_HEADER DESTINATION ${INCLUDEDIR}
+	     RUNTIME DESTINATION       ${BINDIR}
+	     LIBRARY DESTINATION       ${LIBDIR}
+	     ARCHIVE DESTINATION       ${LIBDIR}
+	     PUBLIC_HEADER DESTINATION ${INCLUDEDIR}/${_current_dir_relative_path}
           )
   else()
+	
+    if (ARG_HDRS)
+       set_target_properties( ${_NAME} PROPERTIES PRIVATE_HEADER "${ARG_HDRS}" )
+    endif()
+
     # fight export bug ?
-    # I still dont' know how to build a "public" static library depending on "private ones" without exporting the targets
-    # 
     install( TARGETS ${_NAME}
              EXPORT opencensus-cpp-targets )
 

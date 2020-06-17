@@ -52,6 +52,7 @@ if ( BUILD_SHARED_LIBS )
   add_link_options("LINKER:--no-undefined")
 endif()
 
+include(GNUInstallDirs)
 
 include(OpenCensusDeps)
 
@@ -69,5 +70,4 @@ if(BUILD_TESTING)
   add_subdirectory(examples)
 endif()
 
-include(GNUInstallDirs)
 install( EXPORT opencensus-cpp-targets DESTINATION ${LIBDIR}/cmake/opencensus-cpp )
