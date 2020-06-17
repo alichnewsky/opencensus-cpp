@@ -71,3 +71,16 @@ if(BUILD_TESTING)
 endif()
 
 install( EXPORT opencensus-cpp-targets DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/opencensus-cpp )
+
+# we still need to create and export opencensus-cpp-config.cmake 
+
+# Create and install the CMake configuration files.
+configure_file("${CMAKE_CURRENT_LIST_DIR}/cmake/config.cmake.in"
+               "opencensus-cpp-config.cmake" @ONLY)
+configure_file("${CMAKE_CURRENT_LIST_DIR}/cmake/config-version.cmake.in"
+               "opencensus-cpp-config-version.cmake" @ONLY)
+
+install(
+    FILES "${CMAKE_CURRENT_BINARY_DIR}/opencensus-cpp-config.cmake"
+          "${CMAKE_CURRENT_BINARY_DIR}/opencensus-cpp-config-version.cmake"
+    DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/opencensus-cpp")
