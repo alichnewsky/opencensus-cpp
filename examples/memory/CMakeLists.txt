@@ -28,7 +28,7 @@ endif()
 # I want existing curl
 set ( USE_SYSTEM_CURL YES )
 include(FetchContent)
-FetchContent_Declare(cpr GIT_REPOSITORY https://github.com/whoshuu/cpr.git)
+FetchContent_Declare(cpr GIT_REPOSITORY https://github.com/whoshuu/cpr.git GIT_TAG v1.5.1)
 if ( NOT cpr_POPULATED )
 
   set(orig_BUILD_SHARED_LIBS          "${BUILD_SHARED_LIBS}"         )
